@@ -1,0 +1,235 @@
+from odoo import http
+from odoo.http import request
+
+class DocsApiController(http.Controller):
+
+    @http.route('/api/openapi.json', type='http', auth='public', methods=['GET'], csrf=False)
+    def openapi_json(self):
+        spec = {
+            "openapi": "3.0.0",
+            "info": {
+                "title": "SendTrack Odoo REST API",
+                "version": "1.0.0",
+                "description": "API REST para gestion de autenticacion, contactos, envios y tickets en Odoo"
+            },
+            "servers": [
+                {"url": "http://localhost:8069", "description": "Servidor Local"}
+            ],
+            "paths": {
+                "/api/auth/register": {
+                    "post": {
+                        "summary": "Registrar nuevo usuario y contacto",
+                        "requestBody": {
+                            "required": True,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["name", "email", "password"],
+                                        "properties": {
+                                            "name": {"type": "string", "example": "Carlos Gomez"},
+                                            "email": {"type": "string", "example": "carlos@test.com"},
+                                            "password": {"type": "string", "example": "mypassword123"},
+                                            "phone": {"type": "string", "example": "600112233"},
+                                            "street": {"type": "string", "example": "Calle Mayor 10"}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "201": {"description": "Usuario y contacto creados"},
+                            "400": {"description": "Parametros requeridos faltantes"},
+                            "409": {"description": "Email ya existente"}
+                        }
+                    }
+                },
+                "/api/auth/login": {
+                    "post": {
+                        "summary": "Iniciar sesion",
+                        "requestBody": {
+                            "required": True,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["email", "password"],
+                                        "properties": {
+                                            "email": {"type": "string", "example": "carlos@test.com"},
+                                            "password": {"type": "string", "example": "mypassword123"}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {"description": "Sesion iniciada"},
+                            "401": {"description": "Credenciales invalidas"}
+                        }
+                    }
+                },
+                "/api/auth/logout": {
+                    "post": {
+                        "summary": "Cerrar sesion",
+                        "responses": {
+                            "200": {"description": "Sesion cerrada"}
+                        }
+                    }
+                },
+                "/api/shipments": {
+                    "post": {
+                        "summary": "Crear envio",
+                        "requestBody": {
+                            "required": True,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["sender_id", "delivery_address"],
+                                        "properties": {
+                                            "sender_id": {"type": "integer", "example": 3},
+                                            "receiver_id": {"type": "integer", "example": 4},
+                                            "receiver_name": {"type": "string", "example": "Laura Perez"},
+                                            "receiver_email": {"type": "string", "example": "laura@test.com"},
+                                            "receiver_phone": {"type": "string", "example": "611223344"},
+                                            "delivery_address": {"type": "string", "example": "Avenida Diagonal 200, Barcelona"},
+                                            "weight": {"type": "number", "example": 2.5},
+                                            "notes": {"type": "string", "example": "Timbre 2B"}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "201": {"description": "Envio creado exitosamente"},
+                            "400": {"description": "Datos obligatorios faltantes"}
+                        }
+                    }
+                },
+                "/api/shipments/person/{partner_id}": {
+                    "get": {
+                        "summary": "Listar envios de una persona",
+                        "parameters": [
+                            {
+                                "name": "partner_id",
+                                "in": "path",
+                                "required": True,
+                                "schema": {"type": "integer"}
+                            },
+                            {
+                                "name": "role",
+                                "in": "query",
+                                "required": False,
+                                "schema": {
+                                    "type": "string",
+                                    "enum": ["all", "sender", "receiver"],
+                                    "default": "all"
+                                }
+                            }
+                        ],
+                        "responses": {
+                            "200": {"description": "Listado de envios"},
+                            "404": {"description": "Contacto no encontrado"}
+                        }
+                    }
+                },
+                "/api/shipments/track/{tracking_code}": {
+                    "get": {
+                        "summary": "Rastrear envio por tracking code",
+                        "parameters": [
+                            {
+                                "name": "tracking_code",
+                                "in": "path",
+                                "required": True,
+                                "schema": {"type": "string"}
+                            }
+                        ],
+                        "responses": {
+                            "200": {"description": "Detalles del envio"},
+                            "404": {"description": "Envio no encontrado"}
+                        }
+                    }
+                },
+                "/api/tickets": {
+                    "post": {
+                        "summary": "Crear ticket de soporte",
+                        "requestBody": {
+                            "required": True,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["title", "description", "partner_id"],
+                                        "properties": {
+                                            "title": {"type": "string", "example": "Paquete retrasado"},
+                                            "description": {"type": "string", "example": "No ha llegado en la fecha prevista"},
+                                            "partner_id": {"type": "integer", "example": 3},
+                                            "tracking_code": {"type": "string", "example": "8A7B6C5D4E3F"},
+                                            "priority": {
+                                                "type": "string",
+                                                "enum": ["low", "medium", "high"],
+                                                "default": "medium"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "201": {"description": "Ticket creado"},
+                            "400": {"description": "Campos obligatorios faltantes"}
+                        }
+                    }
+                },
+                "/api/tickets/person/{partner_id}": {
+                    "get": {
+                        "summary": "Listar tickets de una persona",
+                        "parameters": [
+                            {
+                                "name": "partner_id",
+                                "in": "path",
+                                "required": True,
+                                "schema": {"type": "integer"}
+                            }
+                        ],
+                        "responses": {
+                            "200": {"description": "Listado de tickets"},
+                            "404": {"description": "Contacto no encontrado"}
+                        }
+                    }
+                }
+            }
+        }
+        return request.make_json_response(spec, status=200)
+
+    @http.route('/api/docs', type='http', auth='public', methods=['GET'], csrf=False)
+    def swagger_ui(self):
+        html_content = """<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SendTrack API - Swagger UI</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+    <style>
+        body { margin: 0; padding: 0; background: #fafafa; }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+    <script>
+        window.onload = function() {
+            SwaggerUIBundle({
+                url: "/api/openapi.json",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ]
+            });
+        };
+    </script>
+</body>
+</html>"""
+        return request.make_response(html_content, headers=[('Content-Type', 'text/html; charset=utf-8')])

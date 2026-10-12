@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_sendtrack_root" name="SendTrack" sequence="10"/>
+
+    <menuitem id="menu_sendtrack_shipments"
+              name="Shipments"
+              parent="menu_sendtrack_root"
+              action="action_sendtrack_shipment"
+              sequence="10"/>
+
+    <menuitem id="menu_sendtrack_tickets"
+              name="Tickets"
+              parent="menu_sendtrack_root"
+              action="action_sendtrack_ticket"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sendtrack_shipment_user,sendtrack.shipment.user,model_sendtrack_shipment,base.group_user,1,1,1,1
+access_sendtrack_ticket_user,sendtrack.ticket.user,model_sendtrack_ticket,base.group_user,1,1,1,1
