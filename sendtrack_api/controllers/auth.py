@@ -2,6 +2,7 @@ import json
 from odoo import http
 from odoo.http import request
 from odoo.exceptions import AccessDenied
+from .jwt_auth import generate_token
 
 class AuthApiController(http.Controller):
 
@@ -28,8 +29,10 @@ class AuthApiController(http.Controller):
             user = request.env['res.users'].sudo().browse(uid)
             partner = user.partner_id
 
+            token = generate_token(user.id, partner.id)
+
             response_data = {
-                'session_id': request.session.sid,
+                'token': token,
                 'user_id': user.id,
                 'partner_id': partner.id,
                 'name': user.name,
@@ -45,11 +48,7 @@ class AuthApiController(http.Controller):
 
     @http.route('/api/auth/logout', type='http', auth='public', methods=['POST'], csrf=False)
     def logout(self, **kwargs):
-        try:
-            request.session.logout()
-            return request.make_json_response({'status': 'logged_out'}, status=200)
-        except Exception as e:
-            return request.make_json_response({'error': str(e)}, status=500)
+        return request.make_json_response({'status': 'logged_out'}, status=200)
 
     @http.route('/api/auth/register', type='http', auth='public', methods=['POST'], csrf=False)
     def register(self, **kwargs):

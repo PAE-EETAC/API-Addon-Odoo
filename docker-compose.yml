@@ -11,7 +11,7 @@ services:
       - PASSWORD=odoo
     volumes:
       - odoo-web-data:/var/lib/odoo
-      - ./addons:/mnt/extra-addons
+      - ./sendtrack_api:/mnt/extra-addons/sendtrack_api
     command: -- -d odoo -i contacts,sendtrack_api --dev=reload,xml
 
   db:

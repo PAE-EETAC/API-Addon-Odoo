@@ -1,10 +1,12 @@
 import json
 from odoo import http
 from odoo.http import request
+from .jwt_auth import jwt_required
 
 class TicketApiController(http.Controller):
 
     @http.route('/api/tickets', type='http', auth='public', methods=['POST'], csrf=False)
+    @jwt_required
     def create_ticket(self, **kwargs):
         try:
             payload = json.loads(request.httprequest.data.decode('utf-8'))
@@ -49,6 +51,7 @@ class TicketApiController(http.Controller):
             return request.make_json_response({'error': str(e)}, status=500)
 
     @http.route('/api/tickets/person/<int:partner_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @jwt_required
     def get_tickets_by_person(self, partner_id, **kwargs):
         partner = request.env['res.partner'].sudo().browse(int(partner_id))
         if not partner.exists():

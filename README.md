@@ -63,7 +63,7 @@ Body:
 Respuesta:
 ```json
 {
-  "session_id": "c1f7a0...",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user_id": 7,
   "partner_id": 9,
   "name": "Pepe",

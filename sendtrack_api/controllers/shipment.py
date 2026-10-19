@@ -1,10 +1,12 @@
 import json
 from odoo import http
 from odoo.http import request
+from .jwt_auth import jwt_required
 
 class ShipmentApiController(http.Controller):
 
     @http.route('/api/shipments', type='http', auth='public', methods=['POST'], csrf=False)
+    @jwt_required
     def create_shipment(self, **kwargs):
         try:
             payload = json.loads(request.httprequest.data.decode('utf-8'))
@@ -58,6 +60,7 @@ class ShipmentApiController(http.Controller):
             return request.make_json_response({'error': str(e)}, status=500)
 
     @http.route('/api/shipments/person/<int:partner_id>', type='http', auth='public', methods=['GET'], csrf=False)
+    @jwt_required
     def get_shipments_by_person(self, partner_id, **kwargs):
         partner = request.env['res.partner'].sudo().browse(int(partner_id))
         if not partner.exists():
@@ -79,6 +82,7 @@ class ShipmentApiController(http.Controller):
             return request.make_json_response({'error': str(e)}, status=500)
 
     @http.route('/api/shipments/track/<string:tracking_code>', type='http', auth='public', methods=['GET'], csrf=False)
+    @jwt_required
     def track_shipment(self, tracking_code, **kwargs):
         shipment = request.env['sendtrack.shipment'].sudo().search([('tracking_code', '=', tracking_code)], limit=1)
         if not shipment:

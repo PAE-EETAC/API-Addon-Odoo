@@ -13,7 +13,7 @@ class DocsApiController(http.Controller):
                 "description": "API REST para gestion de autenticacion, contactos, envios y tickets en Odoo"
             },
             "servers": [
-                {"url": "http://localhost:8069", "description": "Servidor Local"}
+                {"url": "/", "description": "Server"}
             ],
             "paths": {
                 "/api/auth/register": {
@@ -63,7 +63,7 @@ class DocsApiController(http.Controller):
                             }
                         },
                         "responses": {
-                            "200": {"description": "Sesion iniciada"},
+                            "200": {"description": "Login exitoso, devuelve token JWT"},
                             "401": {"description": "Credenciales invalidas"}
                         }
                     }
@@ -79,6 +79,7 @@ class DocsApiController(http.Controller):
                 "/api/shipments": {
                     "post": {
                         "summary": "Crear envio",
+                        "security": [{"BearerAuth": []}],
                         "requestBody": {
                             "required": True,
                             "content": {
@@ -109,6 +110,7 @@ class DocsApiController(http.Controller):
                 "/api/shipments/person/{partner_id}": {
                     "get": {
                         "summary": "Listar envios de una persona",
+                        "security": [{"BearerAuth": []}],
                         "parameters": [
                             {
                                 "name": "partner_id",
@@ -136,6 +138,7 @@ class DocsApiController(http.Controller):
                 "/api/shipments/track/{tracking_code}": {
                     "get": {
                         "summary": "Rastrear envio por tracking code",
+                        "security": [{"BearerAuth": []}],
                         "parameters": [
                             {
                                 "name": "tracking_code",
@@ -153,6 +156,7 @@ class DocsApiController(http.Controller):
                 "/api/tickets": {
                     "post": {
                         "summary": "Crear ticket de soporte",
+                        "security": [{"BearerAuth": []}],
                         "requestBody": {
                             "required": True,
                             "content": {
@@ -184,6 +188,7 @@ class DocsApiController(http.Controller):
                 "/api/tickets/person/{partner_id}": {
                     "get": {
                         "summary": "Listar tickets de una persona",
+                        "security": [{"BearerAuth": []}],
                         "parameters": [
                             {
                                 "name": "partner_id",
@@ -196,6 +201,15 @@ class DocsApiController(http.Controller):
                             "200": {"description": "Listado de tickets"},
                             "404": {"description": "Contacto no encontrado"}
                         }
+                    }
+                }
+            },
+            "components": {
+                "securitySchemes": {
+                    "BearerAuth": {
+                        "type": "http",
+                        "scheme": "bearer",
+                        "bearerFormat": "JWT"
                     }
                 }
             }
