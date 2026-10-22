@@ -4,7 +4,7 @@ from functools import wraps
 from odoo.http import request
 from odoo.tools import config
 
-SECRET_KEY = config.get('jwt_secret') or 'sendtrack_default_secret'
+SECRET_KEY = config.get('jwt_secret') or 'sendtrack_super_secure_jwt_secret_key_2026'
 ALGORITHM = 'HS256'
 
 def generate_token(user_id, partner_id=None):

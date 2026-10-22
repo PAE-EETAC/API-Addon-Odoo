@@ -1,6 +1,6 @@
 services:
   web:
-    image: odoo:19.0
+    build: .
     depends_on:
       - db
     ports:
@@ -12,7 +12,7 @@ services:
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./sendtrack_api:/mnt/extra-addons/sendtrack_api
-    command: -- -d odoo -i contacts,sendtrack_api --dev=reload,xml
+    command: -- -d odoo -i contacts,sale_management,sendtrack_api --dev=reload,xml
 
   db:
     image: postgres:15

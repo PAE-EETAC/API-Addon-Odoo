@@ -19,6 +19,7 @@ class SendTrackShipment(models.Model):
         ('cancelled', 'Cancelled')
     ], string='Status', default='draft', required=True)
     notes = fields.Text(string='Notes')
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True, ondelete='set null')
 
     def to_dict(self):
         self.ensure_one()
@@ -38,5 +39,7 @@ class SendTrackShipment(models.Model):
             'weight': self.weight,
             'status': self.status,
             'notes': self.notes or '',
+            'sale_order_id': self.sale_order_id.id if self.sale_order_id else None,
+            'sale_order_name': self.sale_order_id.name if self.sale_order_id else '',
             'created_at': fields.Datetime.to_string(self.create_date)
         }

@@ -86,7 +86,7 @@ class DocsApiController(http.Controller):
                                 "application/json": {
                                     "schema": {
                                         "type": "object",
-                                        "required": ["sender_id", "delivery_address"],
+                                        "required": ["sender_id", "delivery_address", "product_id", "price_unit"],
                                         "properties": {
                                             "sender_id": {"type": "integer", "example": 3},
                                             "receiver_id": {"type": "integer", "example": 4},
@@ -95,7 +95,10 @@ class DocsApiController(http.Controller):
                                             "receiver_phone": {"type": "string", "example": "611223344"},
                                             "delivery_address": {"type": "string", "example": "Avenida Diagonal 200, Barcelona"},
                                             "weight": {"type": "number", "example": 2.5},
-                                            "notes": {"type": "string", "example": "Timbre 2B"}
+                                            "notes": {"type": "string", "example": "Timbre 2B"},
+                                            "product_id": {"type": "integer", "example": 1},
+                                            "price_unit": {"type": "number", "example": 25.50},
+                                            "quantity": {"type": "number", "example": 1.0}
                                         }
                                     }
                                 }
