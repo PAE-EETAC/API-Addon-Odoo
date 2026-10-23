@@ -10,6 +10,9 @@
         'views/ticket_views.xml',
         'views/menu_views.xml',
     ],
+    'external_dependencies': {
+        'python': ['pyjwt'],
+    },
     'installable': True,
     'application': True,
     'auto_install': False,

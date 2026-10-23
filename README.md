@@ -89,21 +89,24 @@ Respuesta:
 
 ### Envíos
 
-#### Crear envío
+#### Crear envío (para el usuario autenticado)
 `POST /api/shipments`
+
+Headers:
+`Authorization: Bearer <token>`
 
 Body:
 ```json
 {
-  "sender_id": 3,
-  "receiver_name": "Ana Lopez",
-  "receiver_email": "ana@test.com",
-  "receiver_phone": "611223344",
+  "product_id": 1,
+  "price_unit": 25.50,
+  "quantity": 1.0,
   "delivery_address": "Av Diagonal 100",
-  "weight": 1.5,
-  "notes": "Piso 2"
+  "notes": "Piso 2",
+  "weight": 1.5
 }
 ```
+*(Nota: El destinatario es automáticamente el usuario del token. Si no se envía `delivery_address`, se utiliza la dirección de su perfil).*
 
 Respuesta:
 ```json
@@ -111,21 +114,33 @@ Respuesta:
   "id": 1,
   "name": "SHP-A1B2C3D4",
   "tracking_code": "E5F6G7H8I9J0",
-  "sender_id": 3,
-  "sender_name": "Pepe",
-  "sender_email": "pepe@test.com",
-  "sender_phone": "600123456",
-  "receiver_id": 4,
-  "receiver_name": "Ana Lopez",
-  "receiver_email": "ana@test.com",
-  "receiver_phone": "611223344",
+  "sender_id": 1,
+  "sender_name": "My Company",
+  "receiver_id": 69,
+  "receiver_name": "Usuario Test",
+  "receiver_email": "test_user@sendtrack.com",
+  "receiver_phone": "+34 600 111 222",
   "delivery_address": "Av Diagonal 100",
   "weight": 1.5,
   "status": "draft",
   "notes": "Piso 2",
-  "created_at": "2026-10-12 18:00:00"
+  "sale_order_id": 2,
+  "sale_order_name": "S00002",
+  "sale_state": "sale",
+  "amount_total": 25.50,
+  "product_id": 1,
+  "product_name": "Servicio de Envío Estándar",
+  "quantity": 1.0,
+  "price_unit": 25.50,
+  "created_at": "2026-10-23 07:50:00"
 }
 ```
+
+#### Listar mis envíos (usuario autenticado)
+`GET /api/shipments/me`
+
+Headers:
+`Authorization: Bearer <token>`
 
 #### Listar envíos de una persona
 `GET /api/shipments/person/<partner_id>`

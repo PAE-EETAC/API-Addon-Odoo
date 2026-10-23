@@ -78,7 +78,7 @@ class DocsApiController(http.Controller):
                 },
                 "/api/shipments": {
                     "post": {
-                        "summary": "Crear envio",
+                        "summary": "Crear envio para el usuario autenticado",
                         "security": [{"BearerAuth": []}],
                         "requestBody": {
                             "required": True,
@@ -86,19 +86,15 @@ class DocsApiController(http.Controller):
                                 "application/json": {
                                     "schema": {
                                         "type": "object",
-                                        "required": ["sender_id", "delivery_address", "product_id", "price_unit"],
+                                        "required": ["product_id", "price_unit"],
                                         "properties": {
-                                            "sender_id": {"type": "integer", "example": 3},
-                                            "receiver_id": {"type": "integer", "example": 4},
-                                            "receiver_name": {"type": "string", "example": "Laura Perez"},
-                                            "receiver_email": {"type": "string", "example": "laura@test.com"},
-                                            "receiver_phone": {"type": "string", "example": "611223344"},
-                                            "delivery_address": {"type": "string", "example": "Avenida Diagonal 200, Barcelona"},
-                                            "weight": {"type": "number", "example": 2.5},
-                                            "notes": {"type": "string", "example": "Timbre 2B"},
                                             "product_id": {"type": "integer", "example": 1},
                                             "price_unit": {"type": "number", "example": 25.50},
-                                            "quantity": {"type": "number", "example": 1.0}
+                                            "quantity": {"type": "number", "example": 1.0},
+                                            "delivery_address": {"type": "string", "example": "Avenida Diagonal 200, Barcelona"},
+                                            "sender_id": {"type": "integer", "example": 68},
+                                            "weight": {"type": "number", "example": 2.5},
+                                            "notes": {"type": "string", "example": "Timbre 2B"}
                                         }
                                     }
                                 }
@@ -107,6 +103,15 @@ class DocsApiController(http.Controller):
                         "responses": {
                             "201": {"description": "Envio creado exitosamente"},
                             "400": {"description": "Datos obligatorios faltantes"}
+                        }
+                    }
+                },
+                "/api/shipments/me": {
+                    "get": {
+                        "summary": "Listar mis envios (usuario autenticado)",
+                        "security": [{"BearerAuth": []}],
+                        "responses": {
+                            "200": {"description": "Listado de envios del usuario"}
                         }
                     }
                 },

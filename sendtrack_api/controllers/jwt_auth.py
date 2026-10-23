@@ -1,4 +1,28 @@
-import jwt
+try:
+    import jwt
+except ImportError:
+    import subprocess
+    import sys
+    import os
+    import site
+    import importlib
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--break-system-packages", "pyjwt"])
+    except Exception:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "--break-system-packages", "pyjwt"])
+    py_ver = f"python{sys.version_info.major}.{sys.version_info.minor}"
+    candidates = [
+        site.getusersitepackages(),
+        os.path.expanduser(f"~/.local/lib/{py_ver}/site-packages"),
+        f"/var/lib/odoo/.local/lib/{py_ver}/site-packages",
+        f"/home/odoo/.local/lib/{py_ver}/site-packages",
+        f"/usr/local/lib/{py_ver}/dist-packages",
+    ]
+    for path in candidates:
+        if path and os.path.isdir(path) and path not in sys.path:
+            sys.path.insert(0, path)
+    importlib.invalidate_caches()
+    import jwt
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from odoo.http import request

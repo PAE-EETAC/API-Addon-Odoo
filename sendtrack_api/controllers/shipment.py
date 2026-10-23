@@ -14,16 +14,12 @@ class ShipmentApiController(http.Controller):
             payload = kwargs
 
         sender_id = payload.get('sender_id')
-        receiver_id = payload.get('receiver_id')
         delivery_address = payload.get('delivery_address')
         weight = payload.get('weight', 1.0)
         notes = payload.get('notes', '')
         product_id = payload.get('product_id')
         price_unit = payload.get('price_unit')
         quantity = payload.get('quantity', 1)
-
-        if not sender_id or not delivery_address:
-            return request.make_json_response({'error': 'Fields sender_id and delivery_address are required'}, status=400)
 
         if not product_id or not price_unit:
             return request.make_json_response({'error': 'Fields product_id and price_unit are required'}, status=400)
@@ -42,45 +38,37 @@ class ShipmentApiController(http.Controller):
             return request.make_json_response({'error': 'Price unit cannot be negative'}, status=400)
 
         partner_model = request.env['res.partner'].sudo()
-        sender = partner_model.browse(int(sender_id))
-        if not sender.exists():
-            return request.make_json_response({'error': 'Sender partner not found'}, status=404)
+
+        token = request.httprequest.headers.get('Authorization').split(' ', 1)[1]
+        token_data = validate_token(token)
+        customer_partner_id = token_data.get('partner_id')
+
+        customer = partner_model.browse(int(customer_partner_id))
+        if not customer.exists():
+            return request.make_json_response({'error': 'Customer partner from token not found'}, status=404)
+
+        if not delivery_address:
+            delivery_address = customer.street
+            if not delivery_address:
+                return request.make_json_response({'error': 'Field delivery_address is required or must be set in your user profile'}, status=400)
 
         product = request.env['product.product'].sudo().browse(int(product_id))
         if not product.exists():
             return request.make_json_response({'error': 'Product not found'}, status=404)
 
-        if not receiver_id:
-            receiver_name = payload.get('receiver_name')
-            if not receiver_name:
-                return request.make_json_response({'error': 'Either receiver_id or receiver_name is required'}, status=400)
-            company = request.env['res.company'].sudo().search([], order='id asc', limit=1)
-            company_id = company.id if company else 1
-            receiver = partner_model.create({
-                'name': receiver_name,
-                'email': payload.get('receiver_email', ''),
-                'phone': payload.get('receiver_phone', ''),
-                'street': delivery_address,
-                'company_id': company_id
-            })
-            receiver_id = receiver.id
+        if sender_id:
+            sender = partner_model.browse(int(sender_id))
+            if not sender.exists():
+                return request.make_json_response({'error': 'Sender partner not found'}, status=404)
         else:
-            receiver = partner_model.browse(int(receiver_id))
-            if not receiver.exists():
-                return request.make_json_response({'error': 'Receiver partner not found'}, status=404)
-
-        token = request.httprequest.headers.get('Authorization').split(' ', 1)[1]
-        token_data = validate_token(token)
-        partner_id = token_data.get('partner_id')
-
-        partner = partner_model.browse(int(partner_id))
-        if not partner.exists():
-            return request.make_json_response({'error': 'Partner from token not found'}, status=404)
+            company = request.env['res.company'].sudo().search([], order='id asc', limit=1)
+            sender = company.partner_id if company and company.partner_id else partner_model.search([], limit=1)
+            sender_id = sender.id
 
         try:
             shipment = request.env['sendtrack.shipment'].sudo().create({
                 'sender_id': int(sender_id),
-                'receiver_id': int(receiver_id),
+                'receiver_id': int(customer.id),
                 'delivery_address': delivery_address,
                 'weight': weight,
                 'notes': notes,
@@ -88,7 +76,7 @@ class ShipmentApiController(http.Controller):
             })
 
             order = request.env['sale.order'].sudo().create({
-                'partner_id': partner.id,
+                'partner_id': customer.id,
                 'order_line': [(0, 0, {
                     'product_id': product.id,
                     'product_uom_qty': quantity,
@@ -108,6 +96,19 @@ class ShipmentApiController(http.Controller):
             result['price_unit'] = price_unit
 
             return request.make_json_response(result, status=201)
+        except Exception as e:
+            return request.make_json_response({'error': str(e)}, status=500)
+
+    @http.route('/api/shipments/me', type='http', auth='public', methods=['GET'], csrf=False)
+    @jwt_required
+    def get_my_shipments(self, **kwargs):
+        token = request.httprequest.headers.get('Authorization').split(' ', 1)[1]
+        token_data = validate_token(token)
+        partner_id = token_data.get('partner_id')
+        try:
+            shipments = request.env['sendtrack.shipment'].sudo().search([('receiver_id', '=', int(partner_id))])
+            result = [s.to_dict() for s in shipments]
+            return request.make_json_response(result, status=200)
         except Exception as e:
             return request.make_json_response({'error': str(e)}, status=500)
 
